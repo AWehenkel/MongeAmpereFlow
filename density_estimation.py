@@ -171,9 +171,9 @@ if __name__ == "__main__":
  
                 # with torch.no_grad():
                 if True:
-                    train_loss = step(train_loader, train= False)  # not as the running average
-                    valid_loss = step(valid_loader,train = False)
-                    test_loss = step(test_loader,train = False)
+                    train_loss = step(train_loader, train=False).detach()  # not as the running average
+                    valid_loss = step(valid_loader, train=False).detach()
+                    test_loss = step(test_loader, train=False).detach()
                 
                     TRAIN_LOSS.append(train_loss)
                     VALID_LOSS.append(valid_loss)
