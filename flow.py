@@ -36,7 +36,7 @@ class MongeAmpereFlow(nn.Module):
                 self.net.update_perm(x)
             return sign*epsilon*self.net.grad(x), -sign*epsilon*self.net.laplacian(x)
 
-        #rk4
+        #rk4 RUNGE KUTTA 4 (ODE 45)
         for step in range(Nsteps):
             k1_x, k1_logp = ode(x)
             k2_x, k2_logp = ode(x+k1_x/2)
