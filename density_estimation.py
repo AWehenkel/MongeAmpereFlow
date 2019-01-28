@@ -170,9 +170,13 @@ if __name__ == "__main__":
                 step(train_loader, train = True)
  
                 with torch.no_grad():
+                    print("ici1")
                     train_loss = step(train_loader, train=False).detach()  # not as the running average
+                    print("ici2")
                     valid_loss = step(valid_loader, train=False).detach()
+                    print("ici3")
                     test_loss = step(test_loader, train=False).detach()
+                    print("ici4")
                 
                     TRAIN_LOSS.append(train_loss)
                     VALID_LOSS.append(valid_loss)
