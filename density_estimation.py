@@ -169,8 +169,7 @@ if __name__ == "__main__":
             for epoch in range(args.Nepochs):
                 step(train_loader, train = True)
  
-                # with torch.no_grad():
-                if True:
+                with torch.no_grad():
                     train_loss = step(train_loader, train=False).detach()  # not as the running average
                     valid_loss = step(valid_loader, train=False).detach()
                     test_loss = step(test_loader, train=False).detach()

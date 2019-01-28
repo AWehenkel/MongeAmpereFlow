@@ -32,7 +32,8 @@ class MongeAmpereFlow(nn.Module):
         #integrate ODE for x and logp(x)
         def ode(x):
             #special to Simple_MLP
-            if isinstance(self.net, Symmetrize): self.net.update_perm(x)
+            if isinstance(self.net, Symmetrize):
+                self.net.update_perm(x)
             return sign*epsilon*self.net.grad(x), -sign*epsilon*self.net.laplacian(x)
 
         #rk4
