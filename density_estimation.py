@@ -96,7 +96,7 @@ if __name__ == "__main__":
         print ('what network ?', args.net)
         sys.exit(1)
 
-    model = MongeAmpereFlow(net, args.epsilon, args.Nsteps, device=device, name = key)
+    model = MongeAmpereFlow(net, args.epsilon, args.Nsteps, device=device, name=key)
     model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.decay)
@@ -136,12 +136,12 @@ if __name__ == "__main__":
             fig2 = plt.figure()
             ax5 = plt.subplot()
             l1, = ax5.plot([],[],label = 'train')
-            #l2, = ax5.plot([],[],label = 'validation')
+            l2, = ax5.plot([],[],label = 'validation')
             l3, = ax5.plot([],[], 'r', label = 'test')
             ax5.set_xlim([0,args.Nepochs])
             ax5.legend()
             
-        def step(loader, train = True):
+        def step(loader, train=True):
             if train: 
                 model.train()
             else:
@@ -150,7 +150,7 @@ if __name__ == "__main__":
             total_loss = 0.0
             for batch_idx, (data, target) in enumerate(loader):
                 data = data.to(device).view(-1, dim).requires_grad_()
-                #if (train and batch_idx > 10): break
+                # if (train and batch_idx > 10): break
                 loss = model.nll(data).mean()
                 total_loss += loss.data.item()
  
@@ -169,9 +169,9 @@ if __name__ == "__main__":
             for epoch in range(args.Nepochs):
                 step(train_loader, train = True)
  
-                #with torch.no_grad():
+                # with torch.no_grad():
                 if True:
-                    train_loss = step(train_loader, train= False) # not as the running average 
+                    train_loss = step(train_loader, train= False)  # not as the running average
                     valid_loss = step(valid_loader,train = False)
                     test_loss = step(test_loader,train = False)
                 
@@ -202,8 +202,8 @@ if __name__ == "__main__":
                         plt.title('epoch=%g'%epoch)
                         l1.set_xdata(range(len(TRAIN_LOSS)))
                         l1.set_ydata(np.array(TRAIN_LOSS))
-                        l2.set_xdata(range(len(VAL_LOSS)))
-                        l2.set_ydata(np.array(VAL_LOSS))
+                        l2.set_xdata(range(len(VALID_LOSS)))
+                        l2.set_ydata(np.array(VALID_LOSS))
                         l3.set_xdata(range(len(TEST_LOSS)))
                         l3.set_ydata(np.array(TEST_LOSS))
                         ax5.relim()
