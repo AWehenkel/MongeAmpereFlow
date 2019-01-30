@@ -5,14 +5,34 @@ import torch.nn.functional as F
 from symmetrize import Symmetrize
 from torchdiffeq import odeint_adjoint as odeint
 
-class MongeAmpereFlow(nn.Module):
+
+class MongeAmpereNodeModule(nn.Module):
+    def __init__(self, net):
+        super().__init__()
+        self.net = net
+
+    def forward(self, t, x):
+        with torch.set_grad_enabled(True):
+            if not (x[0].requires_grad):
+                x = x[0].clone().detach().requires_grad_(True)
+            else:
+                x = x[0], x[1].requires_grad_(True)
+
+                x = x[0].clone().detach().requires_grad_(True)
+            #dx_dy = torch.autograd.grad(self.net.forward(x), x, create_graph=True)[0]
+            #ddx_ddy = -torch.autograd.grad(dx_dy, x, grad_outputs=torch.ones(x.shape[0]), create_graph=True)[0]
+        #return dx_dy, ddx_ddy
+        return self.net.grad(x), -self.net.laplacian(x)
+
+
+class MongeAmpereNodeFlow(nn.Module):
     '''
     continuous-time Brenier flow
     dx/dt = du(x)/dx
     dlnp(x)/dt = -d^2 u(x)/dx^2 
     '''
     def __init__(self, net, epsilon, Nsteps, device='cpu', name=None):
-        super(MongeAmpereFlow, self).__init__()
+        super(MongeAmpereNodeFlow, self).__init__()
         self.device = device
         if name is None:
             self.name = 'MongeAmpereFlow'
@@ -23,6 +43,7 @@ class MongeAmpereFlow(nn.Module):
         self.epsilon = epsilon 
         self.Nsteps = Nsteps
         self.node = True
+        self.odefunc = MongeAmpereNodeModule(self.net)
 
     def integrate(self, x, logp, sign=1, epsilon=None, Nsteps=None):
         #default values
@@ -32,26 +53,12 @@ class MongeAmpereFlow(nn.Module):
             Nsteps = self.Nsteps
 
         #integrate ODE for x and logp(x)
-        def ode(x):
-            #special to Simple_MLP
-            if isinstance(self.net, Symmetrize):
-                self.net.update_perm(x)
-            return sign*epsilon*self.net.grad(x), -sign*epsilon*self.net.laplacian(x)
-
-        if self.node:
-            print()
+        if sign > 0:
+            x, logp = odeint(self.odefunc, (x, logp), torch.tensor([0., epsilon*Nsteps]))
         else:
-            #rk4 RUNGE KUTTA 4 (ODE 45)
-            for step in range(Nsteps):
-                k1_x, k1_logp = ode(x)
-                k2_x, k2_logp = ode(x+k1_x/2)
-                k3_x, k3_logp = ode(x+k2_x/2)
-                k4_x, k4_logp = ode(x+k3_x)
-
-                x = x + (k1_x/6.+k2_x/3. + k3_x/3. +k4_x/6.)
-                logp = logp + (k1_logp/6. + k2_logp/3. + k3_logp/3. + k4_logp/6.)
+            x, logp = odeint(self.odefunc, (x, logp), torch.tensor([epsilon * Nsteps, 0.]))
                 
-        return x, logp
+        return x[1], logp[1]
 
     def sample(self, batch_size, sigma=1.0):
         #initial value from Gaussian

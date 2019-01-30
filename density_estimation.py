@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 from flow import MongeAmpereFlow
+from flow_node import MongeAmpereNodeFlow
 from net import MLP, CNN, Simple_MLP 
 from utils import save_checkpoint, load_checkpoint
 from utils import logit_back, dataloader
@@ -25,6 +26,7 @@ if __name__ == "__main__":
 
     parser.add_argument("-folder", default='data/',help="where to store results")
     parser.add_argument("-dataset", default='MNIST', help="")
+    parser.add_argument("-solver", default='RK45', help="ODE solver (NODE or x)")
 
     group = parser.add_argument_group('learning  parameters')
     group.add_argument("-Nepochs", type=int, default=1000, help="")
@@ -96,7 +98,10 @@ if __name__ == "__main__":
         print ('what network ?', args.net)
         sys.exit(1)
 
-    model = MongeAmpereFlow(net, args.epsilon, args.Nsteps, device=device, name=key)
+    if args.solver == "NODE":
+        model = MongeAmpereNodeFlow(net, args.epsilon, args.Nsteps, device=device, name=key)
+    else:
+        model = MongeAmpereFlow(net, args.epsilon, args.Nsteps, device=device, name=key)
     model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.decay)
