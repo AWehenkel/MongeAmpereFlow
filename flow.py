@@ -22,7 +22,6 @@ class MongeAmpereFlow(nn.Module):
         self.dim = net.dim
         self.epsilon = epsilon 
         self.Nsteps = Nsteps
-        self.node = True
 
     def integrate(self, x, logp, sign=1, epsilon=None, Nsteps=None):
         #default values
@@ -37,19 +36,15 @@ class MongeAmpereFlow(nn.Module):
             if isinstance(self.net, Symmetrize):
                 self.net.update_perm(x)
             return sign*epsilon*self.net.grad(x), -sign*epsilon*self.net.laplacian(x)
+        #rk4 RUNGE KUTTA 4 (ODE 45)
+        for step in range(Nsteps):
+            k1_x, k1_logp = ode(x)
+            k2_x, k2_logp = ode(x+k1_x/2)
+            k3_x, k3_logp = ode(x+k2_x/2)
+            k4_x, k4_logp = ode(x+k3_x)
 
-        if self.node:
-            print()
-        else:
-            #rk4 RUNGE KUTTA 4 (ODE 45)
-            for step in range(Nsteps):
-                k1_x, k1_logp = ode(x)
-                k2_x, k2_logp = ode(x+k1_x/2)
-                k3_x, k3_logp = ode(x+k2_x/2)
-                k4_x, k4_logp = ode(x+k3_x)
-
-                x = x + (k1_x/6.+k2_x/3. + k3_x/3. +k4_x/6.)
-                logp = logp + (k1_logp/6. + k2_logp/3. + k3_logp/3. + k4_logp/6.)
+            x = x + (k1_x/6.+k2_x/3. + k3_x/3. +k4_x/6.)
+            logp = logp + (k1_logp/6. + k2_logp/3. + k3_logp/3. + k4_logp/6.)
                 
         return x, logp
 

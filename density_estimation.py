@@ -83,7 +83,8 @@ if __name__ == "__main__":
           + '_Batchsize' + str(args.Batchsize) \
           + '_lr' + str(args.lr) \
           + '_Nsteps' + str(args.Nsteps) \
-          + '_epsilon' + str(args.epsilon) 
+          + '_epsilon' + str(args.epsilon) \
+          + '_solver' + str(args.solver)
 
     cmd = ['mkdir', '-p', key]
     subprocess.check_call(cmd)
