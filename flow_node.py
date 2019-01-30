@@ -44,6 +44,7 @@ class MongeAmpereNodeFlow(nn.Module):
         self.Nsteps = Nsteps
         self.node = True
         self.odefunc = MongeAmpereNodeModule(self.net)
+        self.odefunc.to(device)
 
     def integrate(self, x, logp, sign=1, epsilon=None, Nsteps=None):
         #default values
