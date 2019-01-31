@@ -55,9 +55,9 @@ class MongeAmpereNodeFlow(nn.Module):
 
         #integrate ODE for x and logp(x)
         if sign > 0:
-            x, logp = odeint(self.odefunc, (x, logp), torch.tensor([0., epsilon*Nsteps]).to(self.device), rtol=1e-3, atol=1e-4)
+            x, logp = odeint(self.odefunc, (x, logp), torch.tensor([0., epsilon*Nsteps]).to(self.device), rtol=1e-1, atol=1e-1)
         else:
-            x, logp = odeint(self.odefunc, (x, logp), torch.tensor([epsilon * Nsteps, 0.]).to(self.device), rtol=1e-3, atol=1e-4)
+            x, logp = odeint(self.odefunc, (x, logp), torch.tensor([epsilon * Nsteps, 0.]).to(self.device), rtol=1e-1, atol=1e-1)
                 
         return x[1], logp[1]
 
